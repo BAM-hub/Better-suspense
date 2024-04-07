@@ -7,19 +7,25 @@ class PromiseResolver {
   constructor() {}
 
   bindPromise(promise: Promise<any>) {
-    this.promise = promise;
-    promise
-      .then((data) => {
-        if (data) {
-          this.state = "success";
-          this.data = data;
-        }
-      })
-      .catch(() => {
-        console.log("error");
-      });
+    if (!this.promise) {
+      this.promise = promise;
+      promise
+        .then((data) => {
+          if (data) {
+            this.state = "success";
+            this.data = data;
+          }
+        })
+        .catch(() => {
+          this.state = "error";
+          console.log("error in resolver");
+        });
 
-    return this.promise;
+      return this.promise;
+    }
+  }
+  getState() {
+    return this.state;
   }
 }
 
@@ -37,17 +43,27 @@ const PromiseIntorplater = ({
   renderElement?: (data: any, index: number) => ReactNode;
   renderErrorElement: () => ReactNode;
 }>) => {
-  PromiseResolve.bindPromise(fetch);
-  console.log(PromiseResolve.state);
+  console.log("rerenderd");
+  //   console.log("state", PromiseResolve.getState());
+  //   console.log(PromiseResolve.state === "pending" && !PromiseResolve.promise, {
+  //     state: PromiseResolve.state,
+  //     promise: !PromiseResolve.promise,
+  //   });
+  //   return null;
+  if (PromiseResolve.state === "pending" && !PromiseResolve.promise) {
+    PromiseResolve.bindPromise(fetch);
+    console.log("promise bind");
+    throw PromiseResolve.promise;
+  }
   if (PromiseResolve.data && PromiseResolve.state === "success") {
     // setData(PromiseResolve.data);
     if (renderElement) return renderElement(PromiseResolve.data);
     return children;
-  } else if (PromiseResolve.state === "error") {
+  }
+  if (PromiseResolve.state === "error") {
+    console.log("errior component");
     return renderErrorElement();
   }
-
-  throw PromiseResolve.promise;
 };
 
 const Suspenser = ({
