@@ -7,21 +7,20 @@ function App() {
   return (
     <Suspenser
       setData={setData}
-      fetch={
-        new Promise<{ data: string }>((res, rej) => {
-          // setTimeout(() => {
-          //   res([
-          //     {
-          //       name: "data",
-          //     },
-          //     {
-          //       name: "second",
-          //     },
-          //   ]);
-          // }, 3000);
-          rej("err");
-        })
-      }
+      fetch={new Promise<{ data: string }>((res, rej) => {
+        // setTimeout(() => {
+        //   res([
+        //     {
+        //       name: "data",
+        //     },
+        //     {
+        //       name: "second",
+        //     },
+        //   ]);
+        // }, 3000);
+        rej("err");
+      }).catch((err) => console.log(err))}
+      renderErrorElement={() => <>somthing went wrong</>}
       renderElement={(data) => {
         return (
           <>
