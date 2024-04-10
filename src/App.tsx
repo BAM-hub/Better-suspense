@@ -1,27 +1,29 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import "./App.css";
-import Suspenser from "./components/Suspenser";
+import { createPromiseResolver } from "./components/Suspenser";
+
+type Response = {
+  name: string;
+  email: string;
+}[];
 
 function App() {
-  const [data, setData] = useState({ name: null });
+  const Suspenser = createPromiseResolver<Response>([]);
   return (
     <Suspenser
-      setData={setData}
       fetch={
-        new Promise<{ data: string }>((res, rej) => {
+        new Promise<Response>((res, rej) => {
           setTimeout(() => {
             res([
               {
                 name: "data",
-              },
-              {
-                name: "second",
+                email: "bam@shits.com",
               },
             ]);
           }, 3000);
-          // setTimeout(() => {
-          //   rej("err");
-          // }, 3000);
+          setTimeout(() => {
+            rej("err");
+          }, 3000);
         })
       }
       renderErrorElement={() => <>somthing went wrong</>}
@@ -29,7 +31,9 @@ function App() {
         return (
           <>
             {data.map((item, index) => (
-              <Fragment key={index}>{item.name}</Fragment>
+              <Fragment key={index}>
+                {item.name} {item.email}
+              </Fragment>
             ))}
           </>
         );
