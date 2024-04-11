@@ -7,11 +7,15 @@ type Response = {
   email: string;
 }[];
 
+type SecondResponse = {
+  name: string;
+};
+
 function App() {
-  const Suspenser = createPromiseResolver<Response>([]);
+  const Suspenser = createPromiseResolver<[Response, SecondResponse]>([]);
   return (
     <Suspenser
-      fetch={
+      fetch={Promise.all([
         new Promise<Response>((res, rej) => {
           setTimeout(() => {
             res([
@@ -24,13 +28,26 @@ function App() {
           setTimeout(() => {
             rej("err");
           }, 3000);
-        })
-      }
+        }),
+        new Promise<SecondResponse>((res, rej) => {
+          setTimeout(() => {
+            res({
+              name: "data",
+            });
+          }, 3000);
+          setTimeout(() => {
+            rej("err");
+          }, 3000);
+        }),
+      ])}
+      result={(data) => {
+        console.log("res", data);
+      }}
       renderErrorElement={() => <>somthing went wrong</>}
       renderElement={(data) => {
         return (
           <>
-            {data.map((item, index) => (
+            {data[0].map((item, index) => (
               <Fragment key={index}>
                 {item.name} {item.email}
               </Fragment>
@@ -38,9 +55,7 @@ function App() {
           </>
         );
       }}
-    >
-      {/* {data?.name} */}
-    </Suspenser>
+    ></Suspenser>
   );
 }
 export default App;

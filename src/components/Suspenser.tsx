@@ -1,5 +1,12 @@
 import { PropsWithChildren, ReactNode, Suspense } from "react";
 
+type SuspenserProps<T> = PropsWithChildren<{
+  fetch: Promise<T>;
+  renderElement?: (data: T) => ReactNode;
+  renderErrorElement: () => ReactNode;
+  result: (data: T) => void;
+}>;
+
 class PromiseResolver<T> {
   public state: "pending" | "error" | "success" = "pending";
   public data: T;
@@ -33,13 +40,7 @@ export function createPromiseResolver<T>(data: T) {
   const newPromiseResolve = new PromiseResolver({
     ...data,
   });
-  function Suspenser(
-    props: PropsWithChildren<{
-      fetch: Promise<T>;
-      renderElement?: (data: T) => ReactNode;
-      renderErrorElement: () => ReactNode;
-    }>
-  ) {
+  function Suspenser(props: SuspenserProps<T>) {
     return (
       <Suspense fallback={<p>loading</p>}>
         <PromiseIntorplater {...props} />
@@ -52,18 +53,15 @@ export function createPromiseResolver<T>(data: T) {
     fetch,
     renderElement,
     renderErrorElement,
-  }: PropsWithChildren<{
-    fetch: Promise<T>;
-    renderElement?: (data: T) => ReactNode;
-    renderErrorElement: () => ReactNode;
-  }>) {
-    console.log("rerenderd");
-    console.log(newPromiseResolve);
+    result,
+  }: SuspenserProps<T>) {
     if (newPromiseResolve.state === "pending" && !newPromiseResolve.promise) {
       newPromiseResolve.bindPromise(fetch);
       throw newPromiseResolve.promise;
     }
     if (newPromiseResolve.data && newPromiseResolve.state === "success") {
+      if (result) result(newPromiseResolve.data);
+
       if (renderElement) return renderElement(newPromiseResolve.data);
       return children;
     }
