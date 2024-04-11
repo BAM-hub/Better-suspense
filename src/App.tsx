@@ -12,38 +12,46 @@ type SecondResponse = {
 };
 
 function App() {
-  const Suspenser = createPromiseResolver<[Response, SecondResponse]>([]);
+  const Suspenser = createPromiseResolver<[Response, SecondResponse]>([
+    [],
+    { name: "" },
+  ]);
   return (
     <Suspenser
-      fetch={Promise.all([
-        new Promise<Response>((res, rej) => {
-          setTimeout(() => {
-            res([
-              {
-                name: "data",
-                email: "bam@shits.com",
-              },
-            ]);
-          }, 3000);
-          setTimeout(() => {
-            rej("err");
-          }, 3000);
-        }),
-        new Promise<SecondResponse>((res, rej) => {
-          setTimeout(() => {
-            res({
-              name: "data",
-            });
-          }, 3000);
-          setTimeout(() => {
-            rej("err");
-          }, 3000);
-        }),
-      ])}
+      fetch={() =>
+        Promise.all([
+          new Promise<Response>((res, rej) => {
+            setTimeout(() => {
+              res([
+                {
+                  name: "data",
+                  email: "bam@shits.com",
+                },
+              ]);
+            }, 3000);
+            setTimeout(() => {
+              rej("err");
+            }, 3000);
+          }),
+          new Promise<SecondResponse>((res, rej) => {
+            // setTimeout(() => {
+            //   res({
+            //     name: "data",
+            //   });
+            // }, 3000);
+            setTimeout(() => {
+              rej("err");
+            }, 3000);
+          }),
+        ])
+      }
       result={(data) => {
         console.log("res", data);
       }}
-      renderErrorElement={() => <>somthing went wrong</>}
+      renderErrorElement={(e) => {
+        console.log("propegated the error", e);
+        return <>somthing went wrong</>;
+      }}
       renderElement={(data) => {
         return (
           <>

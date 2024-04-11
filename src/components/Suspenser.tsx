@@ -1,9 +1,9 @@
 import { PropsWithChildren, ReactNode, Suspense } from "react";
 
 type SuspenserProps<T> = PropsWithChildren<{
-  fetch: Promise<T>;
+  fetch: () => Promise<T>;
   renderElement?: (data: T) => ReactNode;
-  renderErrorElement: () => ReactNode;
+  renderErrorElement: (error: unknown) => ReactNode;
   result: (data: T) => void;
 }>;
 
@@ -11,6 +11,7 @@ class PromiseResolver<T> {
   public state: "pending" | "error" | "success" = "pending";
   public data: T;
   public promise?: Promise<T>;
+  public error: unknown;
   constructor(data: T) {
     this.data = data;
     this.promise = undefined;
@@ -26,9 +27,10 @@ class PromiseResolver<T> {
             this.data = data;
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error, "error in resolver");
           this.state = "error";
-          console.log("error in resolver");
+          this.error = error;
         });
 
       return this.promise;
@@ -56,7 +58,7 @@ export function createPromiseResolver<T>(data: T) {
     result,
   }: SuspenserProps<T>) {
     if (newPromiseResolve.state === "pending" && !newPromiseResolve.promise) {
-      newPromiseResolve.bindPromise(fetch);
+      newPromiseResolve.bindPromise(fetch());
       throw newPromiseResolve.promise;
     }
     if (newPromiseResolve.data && newPromiseResolve.state === "success") {
@@ -66,7 +68,7 @@ export function createPromiseResolver<T>(data: T) {
       return children;
     }
     if (newPromiseResolve.state === "error") {
-      return renderErrorElement();
+      return renderErrorElement(newPromiseResolve.error);
     }
   }
   return Suspenser;
